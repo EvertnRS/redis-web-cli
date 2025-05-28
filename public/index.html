@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Redis Web CLI</title>
+  <style>
+    body { font-family: monospace; background: #1e1e1e; color: #0f0; padding: 20px; }
+    input { width: 100%; background: #111; color: #0f0; border: none; padding: 10px; font-size: 1rem; }
+    #log { white-space: pre-line; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Redis Web CLI</h1>
+  <input id="cmd" placeholder="Digite um comando Redis e pressione Enter">
+  <div id="log"></div>
+
+  <script>
+    const input = document.getElementById('cmd');
+    const log = document.getElementById('log');
+
+    input.addEventListener('keydown', async (e) => {
+    if (e.key === 'Enter') {
+        const command = input.value.trim();
+        input.value = '';
+
+        if (command.toLowerCase() === 'clear') {
+        log.innerText = '';
+        return;
+        }
+
+        log.innerText += `> ${command}\n`;
+
+        const res = await fetch('/api/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command })
+        });
+
+        const data = await res.json();
+        log.innerText += `${data.result}\n\n`;
+    }
+    });
+  </script>
+</body>
+</html>
