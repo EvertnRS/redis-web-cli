@@ -2,11 +2,65 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Redis Web CLI</title>
   <style>
-    body { font-family: monospace; background: #1e1e1e; color: #0f0; padding: 20px; }
-    input { width: 100%; background: #111; color: #0f0; border: none; padding: 10px; font-size: 1rem; }
-    #log { white-space: pre-line; margin-top: 20px; }
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: monospace;
+      background: #1e1e1e;
+      color: #0f0;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      background: #111;
+      color: #0f0;
+      border: none;
+      padding: 14px;
+      font-size: 1rem;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+
+    #log {
+      white-space: pre-wrap;
+      background: #111;
+      padding: 15px;
+      border-radius: 6px;
+      flex-grow: 1;
+      overflow-y: auto;
+      max-height: 70vh;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      input, #log {
+        font-size: 0.95rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -19,26 +73,31 @@
     const log = document.getElementById('log');
 
     input.addEventListener('keydown', async (e) => {
-    if (e.key === 'Enter') {
+      if (e.key === 'Enter') {
         const command = input.value.trim();
         input.value = '';
 
         if (command.toLowerCase() === 'clear') {
-        log.innerText = '';
-        return;
+          log.innerText = '';
+          return;
         }
 
         log.innerText += `> ${command}\n`;
 
-        const res = await fetch('/api/exec', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command })
-        });
+        try {
+          const res = await fetch('/api/exec', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ command })
+          });
 
-        const data = await res.json();
-        log.innerText += `${data.result}\n\n`;
-    }
+          const data = await res.json();
+          log.innerText += `${data.result}\n\n`;
+          log.scrollTop = log.scrollHeight;
+        } catch (err) {
+          log.innerText += `Erro de conexão.\n\n`;
+        }
+      }
     });
   </script>
 </body>
